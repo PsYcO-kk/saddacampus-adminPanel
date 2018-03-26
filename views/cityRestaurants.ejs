@@ -1,0 +1,207 @@
+<html>
+<head>
+  <title>Admin Panel | Saddacampus</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      var pathname = window.location.pathname;
+      var restaurant_name, restaurant_address, days_available="", id;
+      var timing_start, timing_close, timing_id;
+    	$("#add").click(function(){
+    		restaurant_name=$("#restaurant_name").val();
+        restaurant_address=$("#restaurant_address").val();
+
+        for(let i=0;i<7;i++){
+          if($(`#day${i}`).prop('checked')){
+            days_available = days_available + "1|";
+          }
+          else{
+            days_available = days_available + "0|";
+          }
+        }
+
+    		$.post("http://localhost:3000"+pathname,{restaurant_name: restaurant_name, restaurant_address: restaurant_address, days_available: days_available},function(data){
+    			if(data==='done')
+    			{
+    				location.reload();
+    			}
+    		});
+    	});
+      $(".btn-update").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("update_").join("");
+
+        restaurant_name=$("#name_"+id).val();
+        restaurant_address=$("#address_"+id).val();
+
+        for(let i=0;i<7;i++){
+          if($(`#day${i}_`+id).prop('checked')){
+            days_available = days_available + "1|";
+          }
+          else{
+            days_available = days_available + "0|";
+          }
+        }
+
+        $.ajax({
+          url: "http://localhost:3000"+pathname,
+          type: "PUT",
+          data: {
+            id: id,
+            restaurant_name: restaurant_name,
+            restaurant_address: restaurant_address,
+            days_available: days_available
+          },
+          success: function(data){
+      			if(data==='done')
+      			{
+      				location.reload();
+      			}
+      		}
+        });
+    	});
+      $(".btn-delete").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("delete_").join("");
+
+  			var confirmed = confirm("Are you sure you want to delete this city?");
+
+  			if(confirmed==true){
+          $.ajax({
+            url: "http://localhost:3000"+pathname,
+            type: "DELETE",
+            data: {
+              id: id
+            },
+            success: function(data){
+        			if(data==='done')
+        			{
+        				location.reload();
+        			}
+        		}
+          });
+  			}
+    	});
+
+      $(".btn-addShift").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("addShift_").join("");
+
+    		timing_start=$("#timing_start_res_"+id).val();
+        timing_close=$("#timing_close_res_"+id).val();
+
+    		$.post("http://localhost:3000/restaurant-timing",{restaurant_id: id, timing_start: timing_start, timing_close: timing_close},function(data){
+    			if(data==='done')
+    			{
+    				location.reload();
+    			}
+    		});
+    	});
+      $(".btn-updateShift").click(function(){
+        var selected = $(this).attr("id");
+  			timing_id = selected.split("updateShift_").join("");
+
+        timing_start=$("#timing_start_"+timing_id).val();
+        timing_close=$("#timing_close_"+timing_id).val();
+
+        $.ajax({
+          url: "http://localhost:3000/restaurant-timing",
+          type: "PUT",
+          data: {
+            timing_id: timing_id,
+            timing_start: timing_start,
+            timing_close: timing_close,
+          },
+          success: function(data){
+      			if(data==='done')
+      			{
+      				location.reload();
+      			}
+      		}
+        });
+    	});
+      $(".btn-deleteShift").click(function(){
+        var selected = $(this).attr("id");
+  			timing_id = selected.split("deleteShift_").join("");
+
+  			var confirmed = confirm("Are you sure you want to delete this city?");
+
+  			if(confirmed==true){
+          $.ajax({
+            url: "http://localhost:3000/restaurant-timing",
+            type: "DELETE",
+            data: {
+              timing_id: timing_id
+            },
+            success: function(data){
+        			if(data==='done')
+        			{
+        				location.reload();
+        			}
+        		}
+          });
+  			}
+    	});
+
+      $(".btn-view").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("view_").join("");
+
+				window.location.href = "http://localhost:3000/"+id+"/food-items";
+    	});
+    });
+  </script>
+</head>
+<body>
+  <h3>Restaurants</h3>
+    <ul>
+        <%
+          result.forEach(function(res){
+            var arr = res.days_available.split('|');
+            var check = 'checked';
+        %>
+        <li>
+          <input type="text" size="40" placeholder="Type restaurant name" id="name_<%= res.restaurant_id %>" value="<%= res.restaurant_name %>">
+          <input type="text" size="40" placeholder="Type restaurant address" id="address_<%= res.restaurant_id %>" value="<%= res.restaurant_address %>"><br>
+
+          <% res.timing.forEach(function(time){ %>
+            <input type="time" id="timing_start_<%= time.timing_id %>" value="<%= time.timing_start %>"> to
+            <input type="time" id="timing_close_<%= time.timing_id %>" value="<%= time.timing_close %>">
+            <input type="button" value="Update Shift" id="updateShift_<%= time.timing_id %>" class="btn-updateShift">
+            <input type="button" value="Delete Shift" id="deleteShift_<%= time.timing_id %>" class="btn-deleteShift"><br>
+          <% }); %>
+
+          <br>
+
+          <input type="time" id="timing_start_res_<%= res.restaurant_id %>"> to
+          <input type="time" id="timing_close_res_<%= res.restaurant_id %>">
+          <input type="button" value="Add Shift" id="addShift_<%= res.restaurant_id %>" class="btn-addShift"><br>
+
+          <input type="checkbox" id="day0_<%= res.restaurant_id %>" value="0" <% if(arr[0] == '1'){ %><%= check %><% } %>>Monday<br>
+          <input type="checkbox" id="day1_<%= res.restaurant_id %>" value="1" <% if(arr[1] == '1'){ %><%= check %><% } %>>Tuesday<br>
+          <input type="checkbox" id="day2_<%= res.restaurant_id %>" value="2" <% if(arr[2] == '1'){ %><%= check %><% } %>>Wednesday<br>
+          <input type="checkbox" id="day3_<%= res.restaurant_id %>" value="3" <% if(arr[3] == '1'){ %><%= check %><% } %>>Thursday<br>
+          <input type="checkbox" id="day4_<%= res.restaurant_id %>" value="4" <% if(arr[4] == '1'){ %><%= check %><% } %>>Friday<br>
+          <input type="checkbox" id="day5_<%= res.restaurant_id %>" value="5" <% if(arr[5] == '1'){ %><%= check %><% } %>>Saturday<br>
+          <input type="checkbox" id="day6_<%= res.restaurant_id %>" value="6" <% if(arr[6] == '1'){ %><%= check %><% } %>>Sunday<br>
+
+          <input type="button" value="View" id="view_<%= res.restaurant_id %>" class="btn-view">
+          <input type="button" value="Update" id="update_<%= res.restaurant_id %>" class="btn-update">
+          <input type="button" value="Delete" id="delete_<%= res.restaurant_id %>" class="btn-delete">
+        </li>
+      <% }) %>
+    </ul>
+  <input type="text" size="40" placeholder="Type restaurant name" id="restaurant_name">
+  <input type="text" size="40" placeholder="Type restaurant address" id="restaurant_address"><br />
+
+  <input type="checkbox" id="day0" value="0">Monday<br>
+  <input type="checkbox" id="day1" value="1">Tuesday<br>
+  <input type="checkbox" id="day2" value="2">Wednesday<br>
+  <input type="checkbox" id="day3" value="3">Thursday<br>
+  <input type="checkbox" id="day4" value="4">Friday<br>
+  <input type="checkbox" id="day5" value="5">Saturday<br>
+  <input type="checkbox" id="day6" value="6">Sunday<br>
+
+  <input type="button" value="Add" id="add">
+</body>
+</html>

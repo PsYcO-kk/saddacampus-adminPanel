@@ -1,0 +1,98 @@
+<!-- Change Required -->
+<!-- Change Required -->
+<!-- Change Required -->
+<!-- Change Required -->
+<!-- Change Required -->
+
+<html>
+<head>
+  <title>Admin Panel | Saddacampus</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      var restaurant_name, restaurant_address, id;
+    	$("#add").click(function(){
+    		restaurant_name=$("#restaurant_name").val();
+        restaurant_address=$("#restaurant_address").val();
+
+    		$.post(window.location.href,{restaurant_name: restaurant_name, restaurant_address: restaurant_address},function(data){
+    			if(data==='done')
+    			{
+    				location.reload();
+    			}
+    		});
+    	});
+      $(".btn-update").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("update_").join("");
+
+        restaurant_name=$("#name_"+id).val();
+        restaurant_address=$("#address_"+id).val();
+
+        $.ajax({
+          url: window.location.href,
+          type: "PUT",
+          data: {
+            id: id
+            restaurant_name: restaurant_name,
+            restaurant_address: restaurant_address,
+          },
+          success: function(data){
+      			if(data==='done')
+      			{
+      				location.reload();
+      			}
+      		}
+        });
+    	});
+      $(".btn-delete").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("delete_").join("");
+
+  			var confirmed = confirm("Are you sure you want to delete this city?");
+
+  			if(confirmed==true){
+          $.ajax({
+            url: window.location.href,
+            type: "DELETE",
+            data: {
+              id: id
+            },
+            success: function(data){
+        			if(data==='done')
+        			{
+        				location.reload();
+        			}
+        		}
+          });
+  			}
+    	});
+      $(".btn-view").click(function(){
+        var selected = $(this).attr("id");
+  			id = selected.split("view_").join("");
+
+        restaurant_name=$("#name_"+id).val();
+
+				window.location.href = window.location.href+restaurant_name;
+    	});
+    });
+  </script>
+</head>
+<body>
+  <h3>Restaurants</h3>
+    <ul>
+      <% results.forEach(function(result){ %>
+        <li>
+          <input type="text" size="40" placeholder="Type restaurant name" id="name_<%= result.id %>" value="<%= result.restaurant_name %>">
+          <input type="text" size="40" placeholder="Type restaurant address" id="address_<%= result.id %>" value="<%= result.restaurant_address %>"><br />
+          <input type="button" value="View" id="view_<%= result.id %>" class="btn-view">
+          <input type="button" value="Update" id="update_<%= result.id %>" class="btn-update">
+          <input type="button" value="Delete" id="delete_<%= result.id %>" class="btn-delete">
+        </li>
+      <% }) %>
+    </ul>
+  <input type="text" size="40" placeholder="Type restaurant name" id="restaurant_name"><br />
+  <input type="text" size="40" placeholder="Type restaurant address" id="restaurant_address"><br />
+  <input type="button" value="Add" id="add">
+</body>
+</html>

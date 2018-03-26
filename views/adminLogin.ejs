@@ -1,0 +1,27 @@
+<html>
+<head>
+<title>Admin Login | Saddacampus</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+	var username,password;
+	$("#submit").click(function(){
+		username=$("#username").val();
+		password=$("#password").val();
+
+		$.post("http://localhost:3000/login",{username:username,password:password},function(data){
+			if(data==='done')
+			{
+				window.location.href="/city";
+			}
+		});
+	});
+});
+</script>
+</head>
+<body>
+<input type="text" size="30" placeholder="Type your username" id="username"><br />
+<input type="password" size="30" placeholder="Type your password" id="password"><br />
+<input type="button" value="Submit" id="submit">
+</body>
+</html>
